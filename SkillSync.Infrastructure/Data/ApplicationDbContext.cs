@@ -12,9 +12,7 @@ namespace SkillSync.Infrastructure.Data
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+           : base(options) { }
 
         public DbSet<Project> Projects { get; set; }
         public DbSet<TaskItem> Tasks { get; set; }
@@ -23,12 +21,12 @@ namespace SkillSync.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Example: configure entity relationships if needed
+            // Configure Project-Task one-to-many relationship
             modelBuilder.Entity<Project>()
                 .HasMany(p => p.Tasks)
                 .WithOne(t => t.Project)
                 .HasForeignKey(t => t.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // If Project is deleted, delete associated Tasks
         }
     }
 }
