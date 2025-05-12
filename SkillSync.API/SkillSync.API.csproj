@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SkillSync.Application\SkillSync.Application.csproj" />
     <ProjectReference Include="..\SkillSync.Domain\SkillSync.Domain.csproj" />
+    <ProjectReference Include="..\SkillSync.Infrastructure\SkillSync.Infrastructure.csproj" />
     <ProjectReference Include="..\SkillSync.ServiceDefaults\SkillSync.ServiceDefaults.csproj" />
   </ItemGroup>
 
