@@ -1,15 +1,22 @@
 ﻿@model IEnumerable<SkillSync.Web.ViewModels.TaskViewModel>
 
+@{
+    ViewData["Title"] = "Tasks";
+}
+
 <h2>Task List</h2>
 
-<table class="table table-bordered">
+<a href="@Url.Action("Create", "Task")" class="btn btn-primary">Create New Task</a>
+
+<table class="table mt-3">
     <thead>
         <tr>
             <th>Title</th>
+            <th>Description</th>
             <th>Status</th>
             <th>Due Date</th>
             <th>Project</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -17,11 +24,13 @@
         {
             <tr>
                 <td>@task.Title</td>
+                <td>@task.Description</td>
                 <td>@task.Status</td>
-                <td>@task.DueDate.ToShortDateString()</td>
+                <td>@task.DueDate.ToString("yyyy-MM-dd")</td>
                 <td>@task.ProjectName</td>
                 <td>
-                    <a class="btn btn-info btn-sm" href="@Url.Action("Details", "Task", new { id = task.Id })">Details</a>
+                    <a href="@Url.Action("Edit", "Task", new { id = task.Id })" class="btn btn-warning btn-sm">Edit</a>
+                    <a href="@Url.Action("Delete", "Task", new { id = task.Id })" class="btn btn-danger btn-sm">Delete</a>
                 </td>
             </tr>
         }

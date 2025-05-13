@@ -22,15 +22,15 @@ namespace SkillSync.Web.Controllers
         {
             var tasks = await _taskService.GetAllTasksAsync();
 
-            var viewModel = tasks.Select(t => new TaskViewModel
+            var viewModel = tasks.Select(task => new TaskViewModel
             {
-                Id = t.Id,
-                Title = t.Title,
-                Description = t.Description,
-                Status = t.Status,
-                DueDate = t.DueDate,
-                ProjectName = t.Project?.Name
-            });
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                Status = task.Status,
+                DueDate = task.DueDate,
+                ProjectName = task.Project?.Name  // Assuming Project is loaded in Task model
+            }).ToList();
 
             return View(viewModel);
         }
