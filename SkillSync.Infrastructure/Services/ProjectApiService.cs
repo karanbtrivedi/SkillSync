@@ -15,37 +15,39 @@ namespace SkillSync.Infrastructure.Services
 {
     public class ProjectApiService : IProjectService
     {
-        private readonly HttpClient _httpClient;
+        private readonly ApplicationDbContext _context;
 
-        // Constructor to inject HttpClient
-        public ProjectApiService(HttpClient httpClient)
+        // Constructor to inject ApplicationDbContext
+        public ProjectApiService(ApplicationDbContext context)
         {
-            _httpClient = httpClient;
+            _context = context;
         }
 
-        // Get all projects from the API
+        // Get all projects from the database
         public async Task<List<ProjectViewModel>> GetAllProjectsAsync()
         {
-            // Make GET request to fetch all projects from the API
-            var response = await _httpClient.GetAsync("api/projectapi");
-            response.EnsureSuccessStatusCode();  // Throws exception if response is unsuccessful
+            var projects = await _context.Projects
+                .Select(p => new ProjectViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name
+                })
+                .ToListAsync();
 
-            // Read and deserialize the response content to a list of ProjectViewModel
-            var content = await response.Content.ReadAsStringAsync();
-            var projects = JsonSerializer.Deserialize<List<ProjectViewModel>>(content);
-
-            // Return the list or an empty list if null
-            return projects ?? new List<ProjectViewModel>();
+            return projects;
         }
 
-        // Get a project by its ID
+        // Get a project by its ID from the database
         public async Task<ProjectViewModel?> GetProjectByIdAsync(int id)
         {
-            var response = await _httpClient.GetAsync($"api/projectapi/{id}");
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync();
-            var project = JsonSerializer.Deserialize<ProjectViewModel>(content);
+            var project = await _context.Projects
+                .Where(p => p.Id == id)
+                .Select(p => new ProjectViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name
+                })
+                .FirstOrDefaultAsync();
 
             return project;
         }
@@ -53,27 +55,41 @@ namespace SkillSync.Infrastructure.Services
         // Create a new project
         public async Task<ProjectViewModel> CreateProjectAsync(ProjectViewModel project)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/projectapi", project);
-            response.EnsureSuccessStatusCode();
+            var newProject = new Project
+            {
+                Name = project.Name
+            };
 
-            var content = await response.Content.ReadAsStringAsync();
-            var createdProject = JsonSerializer.Deserialize<ProjectViewModel>(content);
+            _context.Projects.Add(newProject);
+            await _context.SaveChangesAsync();
 
-            return createdProject;
+            return new ProjectViewModel
+            {
+                Id = newProject.Id,
+                Name = newProject.Name
+            };
         }
 
         // Update an existing project
         public async Task UpdateProjectAsync(ProjectViewModel project)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/projectapi/{project.Id}", project);
-            response.EnsureSuccessStatusCode();
+            var existingProject = await _context.Projects.FindAsync(project.Id);
+            if (existingProject != null)
+            {
+                existingProject.Name = project.Name;
+                await _context.SaveChangesAsync();
+            }
         }
 
         // Delete a project by ID
         public async Task DeleteProjectAsync(int id)
         {
-            var response = await _httpClient.DeleteAsync($"api/projectapi/{id}");
-            response.EnsureSuccessStatusCode();
+            var project = await _context.Projects.FindAsync(id);
+            if (project != null)
+            {
+                _context.Projects.Remove(project);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

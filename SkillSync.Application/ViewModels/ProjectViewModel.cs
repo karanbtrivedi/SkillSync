@@ -11,6 +11,6 @@ namespace SkillSync.Application.ViewModels
         public int Id { get; set; }  // Unique identifier for the project
         public string Name { get; set; }  // Name of the project
         public string Description { get; set; }  // Detailed description of the project
-        public DateTime CreatedDate { get; set; }  // Date when the project was created
+        public DateTime CreatedAt { get; set; }  // Date when the project was created
     }
 }
