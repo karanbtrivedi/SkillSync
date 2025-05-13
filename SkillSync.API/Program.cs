@@ -1,10 +1,10 @@
 
 using Microsoft.EntityFrameworkCore;
 using SkillSync.Application.Interfaces;
-using SkillSync.Application.Services;
 using SkillSync.Domain.Repositories;
 using SkillSync.Infrastructure.Data;
 using SkillSync.Infrastructure.Repositories;
+using SkillSync.Infrastructure.Services;
 
 namespace SkillSync.API;
 
@@ -26,10 +26,10 @@ public class Program
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-        builder.Services.AddScoped<IProjectService, ProjectService>();
+        builder.Services.AddScoped<IProjectService, ProjectApiService>();
 
         builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-        builder.Services.AddScoped<ITaskService, TaskService>();
+        builder.Services.AddScoped<ITaskService, TaskApiService>();
 
         var app = builder.Build();
 

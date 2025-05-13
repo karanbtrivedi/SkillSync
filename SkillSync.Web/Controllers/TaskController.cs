@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using SkillSync.Application.DTOs;
 using SkillSync.Application.Interfaces;
-using SkillSync.Application.Services;
+using SkillSync.Application.ViewModels;
 using SkillSync.Domain.Entities;
-using SkillSync.Web.ViewModels;
 
 namespace SkillSync.Web.Controllers
 {
@@ -29,7 +29,7 @@ namespace SkillSync.Web.Controllers
                 Description = task.Description,
                 Status = task.Status,
                 DueDate = task.DueDate,
-                ProjectName = task.Project?.Name  // Assuming Project is loaded in Task model
+                ProjectName = task.ProjectName  // Assuming Project is loaded in Task model
             }).ToList();
 
             return View(viewModel);
@@ -47,7 +47,7 @@ namespace SkillSync.Web.Controllers
                 Description = task.Description,
                 Status = task.Status,
                 DueDate = task.DueDate,
-                ProjectName = task.Project?.Name
+                ProjectName = task.ProjectName
             };
 
             return View(viewModel);
@@ -60,10 +60,10 @@ namespace SkillSync.Web.Controllers
             var viewModel = new TaskViewModel
             {
                 DueDate = DateTime.Today.AddDays(1),
-                Projects = projects.Select(p => new SelectListItem
+                Projects = projects.Select(p => new ProjectDto
                 {
-                    Value = p.Id.ToString(),
-                    Text = p.Name
+                    Id = p.Id,
+                    Name = p.Name
                 }).ToList()
             };
 
@@ -77,24 +77,16 @@ namespace SkillSync.Web.Controllers
             if (!ModelState.IsValid)
             {
                 var projects = await _projectService.GetAllProjectsAsync();
-                model.Projects = projects.Select(p => new SelectListItem
+                model.Projects = projects.Select(p => new ProjectDto
                 {
-                    Value = p.Id.ToString(),
-                    Text = p.Name
+                    Id = p.Id,
+                    Name = p.Name
                 }).ToList();
+
                 return View(model);
             }
 
-            var task = new TaskItem
-            {
-                Title = model.Title,
-                Description = model.Description,
-                Status = model.Status,
-                DueDate = model.DueDate,
-                ProjectId = model.ProjectId
-            };
-
-            await _taskService.CreateTaskAsync(task);
+            await _taskService.CreateTaskAsync(model);
             return RedirectToAction(nameof(Index));
         }
 
@@ -113,10 +105,10 @@ namespace SkillSync.Web.Controllers
                 Status = task.Status,
                 DueDate = task.DueDate,
                 ProjectId = task.ProjectId,
-                Projects = projects.Select(p => new SelectListItem
+                Projects = projects.Select(p => new ProjectDto
                 {
-                    Value = p.Id.ToString(),
-                    Text = p.Name
+                    Id = p.Id,
+                    Name = p.Name
                 }).ToList()
             };
 
@@ -130,10 +122,10 @@ namespace SkillSync.Web.Controllers
             if (!ModelState.IsValid)
             {
                 var projects = await _projectService.GetAllProjectsAsync();
-                model.Projects = projects.Select(p => new SelectListItem
+                model.Projects = projects.Select(p => new ProjectDto
                 {
-                    Value = p.Id.ToString(),
-                    Text = p.Name
+                    Id = p.Id,
+                    Name = p.Name
                 }).ToList();
                 return View(model);
             }
@@ -163,7 +155,7 @@ namespace SkillSync.Web.Controllers
                 Description = task.Description,
                 Status = task.Status,
                 DueDate = task.DueDate,
-                ProjectName = task.Project?.Name
+                ProjectName = task.ProjectName
             };
 
             return View(viewModel);
