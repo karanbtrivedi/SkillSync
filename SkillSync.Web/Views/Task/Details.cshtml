@@ -1,0 +1,24 @@
+﻿@model SkillSync.Web.ViewModels.TaskViewModel
+
+<h2>Task Details</h2>
+
+<div class="card p-3">
+    <dl class="row">
+        <dt class="col-sm-3">Title</dt>
+        <dd class="col-sm-9">@Model.Title</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@Model.Description</dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">@Model.Status</dd>
+
+        <dt class="col-sm-3">Due Date</dt>
+        <dd class="col-sm-9">@Model.DueDate.ToShortDateString()</dd>
+
+        <dt class="col-sm-3">Project</dt>
+        <dd class="col-sm-9">@Model.ProjectName</dd>
+    </dl>
+</div>
+
+<a class="btn btn-secondary mt-3" href="@Url.Action("Index", "Task")">Back to List</a>
