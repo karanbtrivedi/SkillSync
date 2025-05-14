@@ -9,10 +9,10 @@ namespace SkillSync.API.Controllers
     [ApiController]
     public class TaskApiController : ControllerBase
     {
-        private readonly ITaskService _taskService;
+        private readonly ITaskApiService _taskService;
 
         // Constructor injection of ITaskService to interact with business logic
-        public TaskApiController(ITaskService taskService)
+        public TaskApiController(ITaskApiService taskService)
         {
             _taskService = taskService;
         }

@@ -6,6 +6,8 @@ using SkillSync.Domain.Repositories;
 using SkillSync.Infrastructure.Data;
 using SkillSync.Infrastructure.Repositories;
 using SkillSync.Infrastructure.Services;
+using SkillSync.Web.Interfaces;
+using SkillSync.Web.Services;
 
 namespace SkillSync.Web;
 
@@ -19,10 +21,18 @@ public class Program
         // Add services to the container.
         builder.Services.AddControllersWithViews();
 
-        // Register TaskApiService and ITaskService in DI container
-        builder.Services.AddHttpClient<TaskApiService>(client =>
+
+        // Register HttpClient for Project and Task services
+        builder.Services.AddHttpClient<IProjectWebService, ProjectWebService>(client =>
         {
-            client.BaseAddress = new Uri("https://localhost:5001");  // Replace with your actual API URL
+            client.BaseAddress = new Uri("https://localhost:7147/"); // Update with the actual base URL of your API
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
+
+        builder.Services.AddHttpClient<ITaskWebService, TaskWebService>(client =>
+        {
+            client.BaseAddress = new Uri("https://localhost:7147/"); // Update with the actual base URL of your API
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
         });
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -33,10 +43,7 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
     .AddDefaultTokenProviders();
 
         builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-        builder.Services.AddScoped<IProjectService, ProjectApiService>();
-
         builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-        builder.Services.AddScoped<ITaskService, TaskApiService>();
 
         var app = builder.Build();
 

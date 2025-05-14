@@ -13,7 +13,7 @@ using SkillSync.Infrastructure.Data;
 
 namespace SkillSync.Infrastructure.Services
 {
-    public class ProjectApiService : IProjectService
+    public class ProjectApiService : IProjectApiService
     {
         private readonly ApplicationDbContext _context;
 

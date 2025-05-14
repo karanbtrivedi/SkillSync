@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SkillSync.Application.DTOs;
-using SkillSync.Application.ViewModels;
-using SkillSync.Domain.Entities;
+﻿using SkillSync.Application.ViewModels;
 
-namespace SkillSync.Application.Interfaces
+namespace SkillSync.Web.Interfaces
 {
-    public interface IProjectService
+    public interface IProjectWebService
     {
         Task<List<ProjectViewModel>> GetAllProjectsAsync();           // Get all projects
         Task<ProjectViewModel?> GetProjectByIdAsync(int id);          // Get project by ID

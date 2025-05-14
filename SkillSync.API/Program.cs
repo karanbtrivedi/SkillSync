@@ -17,7 +17,12 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.PropertyNamingPolicy = null; // Keep C# casing
+                });
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -26,10 +31,10 @@ public class Program
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-        builder.Services.AddScoped<IProjectService, ProjectApiService>();
+        builder.Services.AddScoped<IProjectApiService, ProjectApiService>();
 
         builder.Services.AddScoped<ITaskRepository, TaskRepository>();
-        builder.Services.AddScoped<ITaskService, TaskApiService>();
+        builder.Services.AddScoped<ITaskApiService, TaskApiService>();
 
         var app = builder.Build();
 

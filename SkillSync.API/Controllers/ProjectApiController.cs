@@ -10,9 +10,9 @@ namespace SkillSync.API.Controllers
     [ApiController]
     public class ProjectApiController : ControllerBase
     {
-        private readonly IProjectService _projectService;
+        private readonly IProjectApiService _projectService;
 
-        public ProjectApiController(IProjectService projectService)
+        public ProjectApiController(IProjectApiService projectService)
         {
             _projectService = projectService;
         }

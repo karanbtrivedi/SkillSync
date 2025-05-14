@@ -13,7 +13,7 @@ using SkillSync.Infrastructure.Data;
 
 namespace SkillSync.Infrastructure.Services
 {
-    public class TaskApiService : ITaskService
+    public class TaskApiService : ITaskApiService
     {
         private readonly ApplicationDbContext _dbContext;
 

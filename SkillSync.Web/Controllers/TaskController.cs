@@ -4,15 +4,16 @@ using SkillSync.Application.DTOs;
 using SkillSync.Application.Interfaces;
 using SkillSync.Application.ViewModels;
 using SkillSync.Domain.Entities;
+using SkillSync.Web.Interfaces;
 
 namespace SkillSync.Web.Controllers
 {
     public class TaskController : Controller
     {
-        private readonly ITaskService _taskService;
-        private readonly IProjectService _projectService;
+        private readonly ITaskWebService _taskService;
+        private readonly IProjectWebService _projectService;
 
-        public TaskController(ITaskService taskService, IProjectService projectService)
+        public TaskController(ITaskWebService taskService, IProjectWebService projectService)
         {
             _taskService = taskService;
             _projectService = projectService;
