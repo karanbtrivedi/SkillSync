@@ -20,6 +20,8 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddControllersWithViews();
+        builder.Services.AddRazorPages();
+
 
 
         // Register HttpClient for Project and Task services
@@ -45,6 +47,12 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
         builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
         builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
+        builder.Services.ConfigureApplicationCookie(options =>
+        {
+            options.LoginPath = "/Account/Login";
+            options.AccessDeniedPath = "/Account/AccessDenied";
+        });
+
         var app = builder.Build();
 
         app.MapDefaultEndpoints();
@@ -66,7 +74,7 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 
         app.MapControllerRoute(
             name: "default",
-            pattern: "{controller=Task}/{action=Index}/{id?}");
+            pattern: "{controller=Home}/{action=Index}/{id?}");
 
         app.Run();
     }
