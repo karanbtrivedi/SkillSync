@@ -13,7 +13,7 @@ namespace SkillSync.Web;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.AddServiceDefaults();
@@ -55,6 +55,14 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
 
         var app = builder.Build();
 
+        // Seed roles
+        using (var scope = app.Services.CreateScope())
+        {
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            await SeedRolesAndAdminAsync(roleManager, userManager);
+        }
+
         app.MapDefaultEndpoints();
 
         // Configure the HTTP request pipeline.
@@ -77,5 +85,39 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectio
             pattern: "{controller=Home}/{action=Index}/{id?}");
 
         app.Run();
+
+        static async Task SeedRolesAndAdminAsync(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager)
+        {
+            string[] roleNames = { "Admin", "User" };
+
+            foreach (var roleName in roleNames)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
+
+            // Optional: Create a default Admin user
+            var adminEmail = "admin@skillsync.com";
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = "SkillSync Admin",
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(user, "Admin@123");
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(user, "Admin");
+                }
+            }
+        }
+
     }
 }

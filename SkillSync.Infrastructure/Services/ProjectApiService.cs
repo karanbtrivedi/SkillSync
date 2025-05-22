@@ -30,7 +30,11 @@ namespace SkillSync.Infrastructure.Services
                 .Select(p => new ProjectViewModel
                 {
                     Id = p.Id,
-                    Name = p.Name
+                    Name = p.Name,
+                    CreatedAt = p.CreatedAt,
+                    StartDate = p.StartDate,
+                    DueDate = p.DueDate,
+                    Description = p.Description
                 })
                 .ToListAsync();
 
@@ -45,7 +49,11 @@ namespace SkillSync.Infrastructure.Services
                 .Select(p => new ProjectViewModel
                 {
                     Id = p.Id,
-                    Name = p.Name
+                    Name = p.Name,
+                    CreatedAt = p.CreatedAt,
+                    StartDate = p.StartDate,
+                    DueDate = p.DueDate,
+                    Description = p.Description
                 })
                 .FirstOrDefaultAsync();
 
@@ -66,7 +74,11 @@ namespace SkillSync.Infrastructure.Services
             return new ProjectViewModel
             {
                 Id = newProject.Id,
-                Name = newProject.Name
+                Name = newProject.Name,
+                CreatedAt = newProject.CreatedAt,
+                StartDate = newProject.StartDate,
+                DueDate = newProject.DueDate,
+                Description = newProject.Description
             };
         }
 

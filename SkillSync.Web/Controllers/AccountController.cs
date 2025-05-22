@@ -40,6 +40,8 @@ namespace SkillSync.Web.Controllers
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
+            await _userManager.AddToRoleAsync(user, "User");
+
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
