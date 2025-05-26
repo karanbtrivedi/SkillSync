@@ -16,6 +16,7 @@ namespace SkillSync.Web.Controllers
             _projectWebService = projectWebService;
         }
 
+        [AllowAnonymous]
         // GET: /Project
         public async Task<IActionResult> Index()
         {
