@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SkillSync.Application.Interfaces;
 using SkillSync.Application.ViewModels;
@@ -17,6 +18,7 @@ namespace SkillSync.API.Controllers
             _projectService = projectService;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProjectViewModel>>> GetProjects()
         {
