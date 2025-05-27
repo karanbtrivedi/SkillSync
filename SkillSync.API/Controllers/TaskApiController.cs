@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SkillSync.Application.Interfaces;
 using SkillSync.Application.ViewModels;
@@ -7,6 +8,7 @@ namespace SkillSync.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "User,Admin")]
     public class TaskApiController : ControllerBase
     {
         private readonly ITaskApiService _taskService;

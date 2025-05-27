@@ -9,6 +9,7 @@ namespace SkillSync.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProjectApiController : ControllerBase
     {
         private readonly IProjectApiService _projectService;
@@ -18,7 +19,6 @@ namespace SkillSync.API.Controllers
             _projectService = projectService;
         }
 
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProjectViewModel>>> GetProjects()
         {
