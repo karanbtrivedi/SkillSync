@@ -68,7 +68,7 @@ public class Program
 
                ValidIssuer = jwtSettings["Issuer"],
                ValidAudience = jwtSettings["Audience"],
-               IssuerSigningKey = new SymmetricSecurityKey(key)
+               IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
            };
        });
 
