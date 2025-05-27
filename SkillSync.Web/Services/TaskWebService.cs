@@ -1,22 +1,30 @@
 ﻿using SkillSync.Application.Interfaces;
 using SkillSync.Application.ViewModels;
 using SkillSync.Web.Interfaces;
+using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace SkillSync.Web.Services
 {
     public class TaskWebService : ITaskWebService
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        // Constructor to inject HttpClient
-        public TaskWebService(HttpClient httpClient)
+        public TaskWebService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClient;
-            //_httpClient.BaseAddress = new Uri("https://localhost:7147/");
+            _httpContextAccessor = httpContextAccessor;
+
+            // Add JWT token from cookie to Authorization header
+            var token = _httpContextAccessor.HttpContext?.Request.Cookies["jwttoken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
         }
 
-        // Get all tasks from the API
         public async Task<List<TaskViewModel>> GetAllTasksAsync()
         {
             var response = await _httpClient.GetAsync("api/taskapi");
@@ -25,7 +33,6 @@ namespace SkillSync.Web.Services
             return JsonSerializer.Deserialize<List<TaskViewModel>>(content) ?? new List<TaskViewModel>();
         }
 
-        // Get a task by its ID
         public async Task<TaskViewModel?> GetTaskByIdAsync(int id)
         {
             var response = await _httpClient.GetAsync($"api/taskapi/{id}");
@@ -34,7 +41,6 @@ namespace SkillSync.Web.Services
             return JsonSerializer.Deserialize<TaskViewModel>(content);
         }
 
-        // Create a new task
         public async Task<TaskViewModel> CreateTaskAsync(TaskViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("api/taskapi", model);
@@ -43,14 +49,12 @@ namespace SkillSync.Web.Services
             return JsonSerializer.Deserialize<TaskViewModel>(content);
         }
 
-        // Update an existing task
         public async Task UpdateTaskAsync(TaskViewModel model)
         {
             var response = await _httpClient.PutAsJsonAsync($"api/taskapi/{model.Id}", model);
             response.EnsureSuccessStatusCode();
         }
 
-        // Delete a task by its ID
         public async Task DeleteTaskAsync(int id)
         {
             var response = await _httpClient.DeleteAsync($"api/taskapi/{id}");

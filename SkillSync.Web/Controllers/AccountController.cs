@@ -1,7 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SkillSync.Domain.Entities;  // Assuming ApplicationUser is here
 using SkillSync.Web.Models;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace SkillSync.Web.Controllers
 {
@@ -9,11 +15,15 @@ namespace SkillSync.Web.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public AccountController(UserManager<ApplicationUser> userManager,
+                SignInManager<ApplicationUser> signInManager,
+                IHttpClientFactory httpClientFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _httpClientFactory = httpClientFactory;
         }
 
         // GET: /Account/Register
@@ -57,12 +67,20 @@ namespace SkillSync.Web.Controllers
             return View(model);
         }
 
-        // GET: /Account/Login
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            return View();
+            ViewData["ReturnUrl"] = returnUrl;
+
+            // Optional: Clear existing auth token cookie/session
+            if (Request.Cookies.ContainsKey("jwt_token"))
+            {
+                Response.Cookies.Delete("jwt_token");
+            }
+
+            return View(new LoginViewModel());
         }
+
 
         // POST: /Account/Login
         [HttpPost]
@@ -72,15 +90,65 @@ namespace SkillSync.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _signInManager.PasswordSignInAsync(
-                model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-
-            if (result.Succeeded)
+            var client = _httpClientFactory.CreateClient();
+            var loginPayload = new
             {
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
+                UserName = model.Email,
+                Password = model.Password
+            };
+            var jsonContent = new StringContent(JsonSerializer.Serialize(loginPayload), Encoding.UTF8, "application/json");
 
-                return RedirectToAction("Index", "Home");
+            var response = await client.PostAsync("https://localhost:7147/api/auth/login", jsonContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(jsonResponse);
+                var token = doc.RootElement.GetProperty("token").GetString();
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    // Decode JWT manually to extract role
+                    var jwtHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwtToken = jwtHandler.ReadJwtToken(token);
+
+                    var roleClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value ?? "User";
+                    var nameClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value ?? model.Email;
+
+                    // Add claims to Cookie auth identity
+                    var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, nameClaim),
+                new Claim(ClaimTypes.Role, roleClaim) // 👈 This enables role-based auth
+            };
+
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    var authProperties = new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1),
+                    };
+
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        new ClaimsPrincipal(claimsIdentity),
+                        authProperties);
+
+                    // Store JWT token in cookie for API calls
+                    HttpContext.Response.Cookies.Append("JwtToken", token, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    });
+
+                    if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                        return Redirect(returnUrl);
+
+                    return RedirectToAction("Index", "Home");
+                }
             }
 
             ModelState.AddModelError("", "Invalid login attempt.");
@@ -90,9 +158,10 @@ namespace SkillSync.Web.Controllers
         // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
-            await _signInManager.SignOutAsync();
+            // Remove JWT cookie on logout
+            Response.Cookies.Delete("JwtToken");
             return RedirectToAction("Index", "Home");
         }
     }

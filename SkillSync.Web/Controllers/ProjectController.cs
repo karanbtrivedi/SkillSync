@@ -6,7 +6,6 @@ using SkillSync.Web.Interfaces;
 
 namespace SkillSync.Web.Controllers
 {
-    [Authorize]
     public class ProjectController : Controller
     {
         private readonly IProjectWebService _projectWebService;
@@ -25,6 +24,8 @@ namespace SkillSync.Web.Controllers
         }
 
         // GET: /Project/Details/5
+        [Authorize(AuthenticationSchemes = "SmartScheme")]
+        //[AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var project = await _projectWebService.GetProjectByIdAsync(id);
