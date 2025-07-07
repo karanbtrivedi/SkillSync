@@ -15,6 +15,7 @@ using SkillSync.Web.Services;
 using System.Security.Claims;
 using System.Text;
 
+
 namespace SkillSync.Web;
 
 public class Program
@@ -72,6 +73,13 @@ public class Program
                     return Task.CompletedTask;
                 }
             };
+        }).AddGoogle("Google", options =>
+        {
+            options.ClientId = builder.Configuration["Authentication:Google:ClientId"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
+            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
+                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+            options.SignInScheme = IdentityConstants.ExternalScheme;
         });
 
         //builder.Services.AddAuthentication(options =>
@@ -120,8 +128,8 @@ public class Program
         // Register HttpClient for Project and Task services
         builder.Services.AddHttpClient<IProjectWebService, ProjectWebService>(client =>
 {
-client.BaseAddress = new Uri("https://localhost:7147/"); // Update with the actual base URL of your API
-client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.BaseAddress = new Uri("https://localhost:7147/"); // Update with the actual base URL of your API
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
         builder.Services.AddHttpClient<ITaskWebService, TaskWebService>(client =>

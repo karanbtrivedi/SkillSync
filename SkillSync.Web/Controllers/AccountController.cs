@@ -155,14 +155,74 @@ namespace SkillSync.Web.Controllers
             return View(model);
         }
 
-        // POST: /Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            // Remove JWT cookie on logout
-            Response.Cookies.Delete("JwtToken");
-            return RedirectToAction("Index", "Home");
+            // Sign out from all authentication schemes (cookie, external, etc.)
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            await HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+
+            // Remove JWT token cookie if present
+            if (Request.Cookies.ContainsKey("JwtToken"))
+            {
+                Response.Cookies.Delete("JwtToken");
+            }
+
+            // Optionally, clear the user principal
+            HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            return RedirectToAction("Login", "Account");
+        }
+
+        [HttpGet]
+        public IActionResult GoogleLogin(string returnUrl = "/")
+        {
+            var redirectUrl = Url.Action("GoogleResponse", "Account", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            return Challenge(properties, "Google");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GoogleResponse(string returnUrl = "/")
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+                return RedirectToAction(nameof(Login));
+
+            var signInResult = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false);
+
+            if (signInResult.Succeeded)
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                // Create user if not exists
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name);
+
+                var user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    FullName = name
+                };
+
+                var result = await _userManager.CreateAsync(user);
+                if (result.Succeeded)
+                {
+                    // 🔽 Add role here
+                    await _userManager.AddToRoleAsync(user, "User");
+
+                    await _userManager.AddLoginAsync(user, info);
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return Redirect(returnUrl);
+                }
+            }
+
+            return RedirectToAction(nameof(Login));
         }
     }
 }
