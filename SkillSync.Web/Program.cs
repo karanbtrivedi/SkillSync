@@ -75,10 +75,14 @@ public class Program
             };
         }).AddGoogle("Google", options =>
         {
-            options.ClientId = builder.Configuration["Authentication:Google:ClientId"]
-                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID");
-            options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]
-                ?? Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET");
+            options.ClientId = !string.IsNullOrWhiteSpace(builder.Configuration["Authentication:Google:ClientId"])
+                ? builder.Configuration["Authentication:Google:ClientId"]
+                : Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID", EnvironmentVariableTarget.Machine);
+
+            options.ClientSecret = !string.IsNullOrWhiteSpace(builder.Configuration["Authentication:Google:ClientSecret"])
+                ? builder.Configuration["Authentication:Google:ClientSecret"]
+                : Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET", EnvironmentVariableTarget.Machine);
+
             options.SignInScheme = IdentityConstants.ExternalScheme;
         });
 
